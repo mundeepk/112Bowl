@@ -1,0 +1,452 @@
+# from cmu_graphics import *
+# from Athlete import *
+# from receiverMovement import *
+# from fieldGoal import *
+# from scoring import *
+# from visuals import *
+# from footballMechanics import *
+# from defenders import *
+# from scoring import *
+# import math
+# import random
+# import time
+
+# def distance(x0, y0, x1, y1):
+#     return ((x0-x1)**2 + (y0-y1)**2)**0.5
+    
+# def quadratic(x, y):
+#     pass
+
+# #Asked chatGPT to adapt the notes code for circular motion into elliptial motion
+# #So, I took the circular motion code given from the notes that I was using initially
+# #and then I added rx, and ry as parameters and then copied the adjusted code into the return statement  
+# # def getRadiusEndPoint(app, cx, cy, rx, ry, theta):
+# #     return (cx + rx*math.cos(math.radians(theta)),
+# #             cy - ry*math.sin(math.radians(theta)))
+# #^^^ not using in code, there's no oval motion
+
+# def onAppStart(app): 
+#     fullGameReset(app)
+
+# def fullGameReset(app):
+#     app.width = 1250
+#     app.height = 600
+#     app.stepsPerSecond = 30
+#     app.receiverRoute = {'Go': [(-300, 0)],
+#                         'Slant': [(-100, 0), (-50, 100)],
+#                         'Four': [(-100,0), (-300, -300)],
+#                         'In': [(-25, 0), (-25, 0)]
+#                         }
+#     scoringVariables(app)
+#     resetDowns(app)
+#     resetVariables(app)
+#     resetPlay(app)
+
+# def resetDowns(app):
+#     app.downs = 1
+#     app.offenseScored = False
+
+# def resetVariables(app):
+
+#     app.tenYardIncrement = app.width/12
+#     app.players = [Athlete(1000, 200), Athlete(1000, 450), Athlete(1000, 550)]
+#     app.runningBack = [Athlete(1000, app.height/2 + 30)]
+    
+
+
+#     app.qbX = app.width - 3.5 * app.tenYardIncrement
+#     app.qbY = app.height/2
+#     app.ballIsDropped = False
+#     app.ballDropMessageDisplayed = False
+#     app.footballSpeed = 10
+
+# def resetPlay(app):
+#     app.cornerBacks = []
+#     app.gamePaused = False
+#     app.defensiveBacks = []
+#     makeCornerBacks(app)
+#     app.counter = 0
+#     app.paused = False
+#     app.footballPaused = False
+#     app.receiverWhoCaughtTheBall = []
+#     app.cornerWhoInterceptedTheBall = []
+#     app.receiverWhoNeedsToRunToCorner = []
+
+#     app.receieverRouteDestinations = []
+#     #app.currentReceiverRoutePart = app.receiverRoute[0]
+#     app.theta = 0
+#     app.receiverXMovement = -3
+#     app.receiverYMovement = 0
+    
+#     app.qbThrowX = app.qbX
+#     app.qbThrowY = app.qbY
+#     app.qbThrowLandX = app.qbX - 10
+#     app.qbThrowLandY = app.qbY 
+#     app.qbThrowLandYMidPoint = app.qbY + (app.qbY - app.qbThrowLandY)/2 
+#     app.qbThrowLandXMidPoint = app.qbX + (app.qbX - app.qbThrowLandX)/2
+#     app.archX = app.qbX - app.qbThrowLandX
+#     app.archY = app.qbY - app.qbThrowLandY
+#     app.archRadius = 1
+#     app.aimingBall = None
+#     app.gameStarted = True
+#     # app.footballX, app.footballY = getRadiusEndPoint(app, app.archX, app.archY, app.archRadius, app.archRadius*0.5,
+#     #                                                 app.theta)
+#     app.footballX, app.footballY = app.qbX, app.qbY
+#     app.ballIsCaught = False
+#     app.runningTheBall = False
+#     app.intercepted = False
+#     app.playIsDead = True
+
+#     resetReceiverAttributes(app)
+#     fieldGoalVariables(app)
+       
+# def onMouseHover(app, mouseX, mouseY):
+#     if app.gameStarted:
+#         app.aimingBall = False
+#     # app.footballY = app.runningBack[0].x
+
+# def onMouseRelease(app, mouseX, mouseY):
+#     app.aimingBall = False
+
+# def onMouseDrag(app, mouseX, mouseY): 
+#     app.gameStarted = False
+#     app.playIsDead = False
+#     app.aimingBall = True
+#     if app.aimingBall:
+#         app.qbThrowX = mouseX
+#         app.qbThrowY = mouseY
+#         app.qbThrowLandX = app.qbX - (app.qbThrowX - app.qbX)
+#         app.qbThrowLandY = app.qbY - (app.qbThrowY - app.qbY)
+#         app.qbThrowLandYMidPoint = app.qbThrowLandY + (app.qbY - app.qbThrowLandY)/2 
+#         app.qbThrowLandXMidPoint = app.qbThrowLandX + (app.qbX - app.qbThrowLandX)/2
+#         app.archX = app.qbX - (app.qbThrowX - app.qbX)/2
+#         app.archY = app.qbY - (app.qbThrowY - app.qbY) / 2
+#         app.archRadius = distance(app.qbX, app.qbY, app.qbThrowLandX, app.qbThrowLandY)/2
+
+# def getThetaFromGiven(app):
+#         radianAngle = math.acos(distance(app.qbThrowLandXMidPoint, app.qbThrowLandYMidPoint, 
+#                                   app.qbX, app.qbThrowLandYMidPoint)/
+#                         distance(app.qbThrowLandXMidPoint, app.qbThrowLandYMidPoint,
+#                                  app.qbX, app.qbY))
+#         finalAngleInDegrees = radianAngle * (180/math.pi)
+#         return finalAngleInDegrees
+#         # if app.qbThrowLandY <= app.qbX:
+#         #     return -finalAngleInDegrees
+#         # return finalAngleInDegrees
+
+# def redrawAll(app):
+#     #region
+#         # rotateAngleOval = getThetaFromGiven(app)
+#         # rotateAngleOval = -rotateAngleOval if app.qbThrowLandY > app.qbY else rotateAngleOval
+#         # drawOval(app.archX, app.archY, app.archRadius*2, app.archRadius, fill = 'white', 
+#         #          border = 'black', dashes = True, rotateAngle = rotateAngleOval)
+                
+#                 # if app.qbThrowLandY <= app.qbY:
+#                 #     drawPolygon(app.qbThrowLandX, app.qbThrowLandY, app.qbX, app.qbY, 
+#                 #                 app.qbX, app.qbY + app.archRadius,
+#                 #                 app.qbThrowLandX-app.archRadius, app.qbThrowLandY)
+#                 # else:
+#                 #     drawPolygon(app.qbThrowLandX, app.qbThrowLandY, app.qbX, app.qbY, 
+#                 #                 app.qbX + app.archRadius, app.qbY + app.archRadius,
+#                 #                 app.qbThrowLandX + app.archRadius, app.qbThrowLandY + app.archRadius)
+#                                 # app.qbThrowLandXMidPoint - app.archRadius, app.qbThrowLandYMidPoint + app.archRadius)
+#                 # if app.qbThrowLandY <= app.qbY:
+#                 #     drawRect(app.qbThrowLandX, app.qbThrowLandY, 
+#                 #              app.archRadius*2, app.archRadius, 
+#                 #             fill = 'black', rotateAngle = rotateAngleForHidingOval, align='left-top')
+#                 # else:
+#                 #     drawRect(app.qbThrowLandXMidPoint, app.qbThrowLandYMidPoint, app.archRadius*2, app.archRadius, 
+#                 #     fill = 'black', rotateAngle = -rotateAngleForHidingOval, align='center')
+
+#     #endregion
+
+#     drawField(app)
+#     drawScoreBoard(app)
+#     if app.gameStarted and app.downs != 4:
+#         drawLabel('Drag your mouse to start the play and throw the ball', app.width/2, 50, size = 16)
+#     if app.intercepted:
+#         drawLabel('Intercepted!', app.width/2, 50, size = 16)
+#     if app.ballIsCaught:
+#         drawLabel('Caught! Use the arrow keys to score!', app.width/2, 50, size = 16)
+#         drawLabel("Press 't' to simulate a defensive tackle", app.width/2, 65, size = 16)
+#     if app.offenseScored:
+#         drawRect(312, 550, 938-312, 50, fill = 'white')
+#         drawLabel('TOUCHDOWN!!! Make the extra point!', app.width/2, 570, size = 16)
+#         drawLabel("Press 'k' to select your power, and 'a' for your angle", app.width/2, 585, size = 16)
+#     # if app.footballX != app.qbX and app.footballY != app.qbY:
+#     #     if app.footballX
+#     if app.ballIsDropped:
+#         print('177')
+#     #     drawLabel("Dropped/Uncatchable ball", app.width/2, 65, size = 16)
+
+#     # print('redraw is runnin!')
+#     if not app.kickingFieldGoal:
+#         drawRect(app.players[0].x, app.players[0].y, 10, 10, fill = 'blue')
+#         drawRect(app.players[1].x, app.players[1].y, 10, 10, fill = 'purple')
+#         drawRect(app.players[2].x, app.players[2].y, 10, 10, fill = 'orange')
+
+#         # for person in app.players:
+#         #     drawRect(person.x, person.y, 10, 10, fill = 'blue')
+
+#         for cB in app.cornerBacks:
+#             drawRect(cB.x, cB.y, 10, 10, fill = 'red')
+
+#         # drawRect(app.defensiveBacks[0].x, app.defensiveBacks[0].y, 10, 10, fill = 'red')
+
+#         drawRect(app.runningBack[0].x, app.runningBack[0].y, 10, 10)
+#         #drawLine(app.qbX, app.qbY, app.qbThrowX, app.qbThrowY, fill = 'blue')
+#         if app.aimingBall:
+#             drawLine(app.qbX, app.qbY, app.qbThrowLandX, app.qbThrowLandY, fill = 'red')
+
+#         if not app.aimingBall and not app.gameStarted or app.runningTheBall and not app.ballIsDropped:
+#             drawCircle(app.footballX, app.footballY, 10, fill = 'brown', rotateAngle = 20)
+    
+#     if app.teamWhoWon != None:
+#         drawLabel(f'{app.teamWhoWon} won!!!', app.width/2, app.height/2, size = 50)
+
+#     if app.downs == 4 and app.playIsDead:
+#         fieldGoalAttemptCheck(app)
+
+#     if app.kickingFieldGoal:
+#         drawFieldGoalSetUp(app)
+#     drawFieldGoalPost(app)
+
+#     if app.drawKick:
+#         drawCircle(app.footballX, app.footballY, 10, fill = 'brown', rotateAngle = 20)
+
+# def takeStep(app):
+#     if app.kickingFieldGoal and not app.kickPowerChosen:
+#         drawPowerMeter(app)
+#     if app.kickingFieldGoal and app.kickPowerChosen and not app.kickAngleChosen:
+#         drawAngleSelector(app)
+#     if app.kickPowerChosen and app.kickAngleChosen and app.didKickScore == None:
+#         determineIfKickScores(app)
+#     if app.drawKick:
+#         drawBallGoingIntoGoal(app)
+
+#     app.counter += 1
+    
+#     runReceiverRoutes(app)
+
+
+#     if not app.aimingBall and not app.gameStarted and not app.footballPaused and not app.ballIsDropped:
+#         #app.theta += 2
+
+#         if not app.ballIsCaught and not app.runningTheBall:
+#             moveFootballLinearly(app)
+            
+#             if app.footballX <= app.qbThrowLandX:
+#                 if not app.ballIsCaught:
+#                     app.ballIsDropped = True
+
+#             #region
+#             # thetaConsideration = getThetaFromGiven(app)
+            
+#             # if app.qbThrowLandY <= app.qbY:
+#             #     app.footballX, app.footballY =  getRadiusEndPoint(app, app.archX, app.archY, app.archRadius, app.archRadius*0.5,
+#             #                                         app.theta - thetaConsideration)
+#             # else:
+#             #     app.footballX, app.footballY = getRadiusEndPoint(app, app.archX, app.archY, app.archRadius, app.archRadius, 
+#             #                             app.theta + thetaConsideration)
+#             # if app.qbThrowLandY <= app.qbY and app.footballX < app.qbThrowLandX:
+#             #     if not app.ballIsCaught:
+#             #         app.ballIsDropped = True 
+#             # elif app.qbThrowLandY > app.qbY and app.footballY > app.qbThrowLandY:
+#             #     if not app.ballIsCaught:
+#             #         app.ballIsDropped = True
+#             #endregion
+    
+#     if app.ballIsDropped:
+#         print('yo')
+#         # app.ballDropMessageDisplayed
+#         # app.gamePaused
+#         # app.gamePaused = True
+
+        
+#     if not app.offenseScored:
+#         checkIfBallIsIntercepted(app)
+
+#     if not app.intercepted:
+#         runCornerBackDefense(app)
+
+#     if app.intercepted:
+#         if app.cornerWhoInterceptedTheBall[0].x < app.width - 10:
+#             app.cornerWhoInterceptedTheBall[0].x += 2
+#             app.footballX = app.cornerWhoInterceptedTheBall[0].x
+#             app.footballY = app.cornerWhoInterceptedTheBall[0].y
+#             receiversRunToCorner(app)
+#             for cB in app.cornerBacks:
+#                 if cB != app.cornerWhoInterceptedTheBall[0].x:
+#                     cB.x += 2
+#         else:
+#             makeDefenseScore(app)
+#             resetDowns(app)
+#             resetVariables(app)
+#             resetPlay(app)
+
+#     if not app.intercepted and not app.ballIsDropped:
+#         checkIfBallIsCaught(app)
+    
+#     if app.ballIsCaught:
+#         giveBallToReceiever(app)
+
+#     checkIfOffensivePlayerScored(app)
+    
+#     if app.offenseScored:
+#         app.kickingFieldGoal = True
+#         # resetDowns(app)
+#         # resetPlayerPositions(app)
+#         # resetPlay(app)
+#         # makeDefenseScore(app)
+#         # checkWinner(app)
+
+#     if app.ballIsDropped and not app.intercepted:
+#         app.playIsDead = True
+#         stopRouteRunning(app)
+#         if app.ballIsCaught:
+#             app.qbX = app.receiverWhoCaughtTheBall[0].x 
+#         elif app.runningTheBall:
+#             app.qbX = app.runningBack[0].x 
+#         elif app.kickingFieldGoal:
+#             print('kicking Fieldgoal!')
+#         else:
+#             print('ball dropped!')
+
+#         time.sleep(2)
+#         if not app.kickingFieldGoal:
+#             print('304')
+#             app.downs += 1
+#             resetPlayerPositions(app)
+#             resetPlay(app)
+#             app.ballIsDropped = False
+#         # if (app.kickingFieldGoal and app.finishedKickAnimation):
+#         #     print('line 304')
+#         #     app.downs += 1
+#         #     resetPlayerPositions(app)
+#         #     resetPlay(app)
+#         #     app.ballIsDropped = False
+#         # else:
+#         #     print('315')
+#         #     app.downs += 1
+#         #     resetPlayerPositions(app)
+#         #     resetPlay(app)
+#         #     app.ballIsDropped = False
+
+#     if app.kickingFieldGoal and (app.downs == 4 or app.downs == 26): 
+#         if app.finishedKickAnimation:
+#             # print('line 326')
+#             makeDefenseScore(app)
+#             resetDowns(app)
+#             resetVariables(app)
+#             resetPlay(app)
+#     if app.downs == 5:
+#         print('line 332')
+#         makeDefenseScore(app)
+#         resetDowns(app)
+#         resetVariables(app)
+#         resetPlay(app)
+
+#     # if app.runningTheBall and not app.paused:
+#     #     giveBallToRunningBack(app)
+
+#     if app.runningTheBall or app.paused and not app.intercepted:
+#         # receiverRun(app)
+#         # if app.runningTheBall:
+#         app.runningBack[0].x -= 3
+#         app.footabllY = app.runningBack[0].y
+#         app.footballX = app.runningBack[0].x
+
+# def onStep(app):
+#     if not app.gamePaused:
+#         takeStep(app)
+
+# def onKeyPress(app, key):
+#     if key == 'p':
+#         app.paused = not app.paused
+#     if key == 'f':
+#         app.footballPaused = not app.footballPaused
+#     if key == 'r':
+#         scoringVariables(app)
+#         resetDowns(app)
+#         resetVariables(app)
+#         resetPlay(app)
+#     if key == 't':
+#         app.playIsDead = True
+#         stopRouteRunning(app)
+#         if app.ballIsCaught:
+#             app.qbX = app.receiverWhoCaughtTheBall[0].x 
+#         elif app.runningTheBall:
+#             app.qbX = app.runningBack[0].x 
+#         else:
+#             print('play is live!')
+
+#         if not app.kickingFieldGoal:
+#             resetPlayerPositions(app)
+#             resetPlay(app)
+#             app.downs += 1
+#             print('386')
+#             app.ballIsDropped = False
+
+#         # if (app.kickingFieldGoal and app.finishedKickAnimation):
+#         #     resetPlayerPositions(app)
+#         #     resetPlay(app)
+#         #     app.downs += 1
+#         #     print('375')
+#         #     app.ballIsDropped = False
+#         # else:
+#             # resetPlayerPositions(app)
+#             # resetPlay(app)
+#             # app.downs += 1
+#             # print('386')
+#             # app.ballIsDropped = False
+
+        
+#     if key == 'g':
+#         app.kickingFieldGoal = not app.kickingFieldGoal
+#     if key == 'k':
+#         app.kickPowerChosen = True
+#     if key == 'a':
+#         app.kickAngleChosen = True
+
+# def onMousePress(app, mouseX, mouseY):
+#     checkIfRunningBackClicked(app, mouseX, mouseY)
+
+# def onKeyHold(app, keys):
+#     if app.ballIsCaught:
+#         receiverWhoCaughtTheBall = app.receiverWhoCaughtTheBall[0]
+#         if 'down' in keys: 
+#             receiverWhoCaughtTheBall.y += 3
+#         if 'up' in keys:
+#             receiverWhoCaughtTheBall.y -= 3
+#         if 'left' in keys:
+#             receiverWhoCaughtTheBall.x -= 3
+#         if 'right' in keys:
+#             receiverWhoCaughtTheBall.x += 3
+#         #app.footballX = receiverWhoCaughtTheBall.x
+#         app.footballY = receiverWhoCaughtTheBall.y
+#     elif app.runningTheBall:
+#         runningBackWithTheBall = app.runningBack[0]
+#         if 'down' in keys: 
+#             runningBackWithTheBall.y += 3
+#         if 'up' in keys:
+#             runningBackWithTheBall.y -= 3
+#         if 'left' in keys:
+#             runningBackWithTheBall.x -= 3
+#         if 'right' in keys:
+#             runningBackWithTheBall.x += 3
+#         app.footballX = runningBackWithTheBall.x
+#         app.footballY = runningBackWithTheBall.y
+#     if app.intercepted:
+#         if 'down' in keys: 
+#             app.receiverWhoNeedsToRunToCorner[0].y += 3
+#         if 'up' in keys:
+#             app.receiverWhoNeedsToRunToCorner[0].y -= 3
+#         if 'left' in keys:
+#             app.receiverWhoNeedsToRunToCorner[0].x -= 3
+#         if 'right' in keys:
+#             app.receiverWhoNeedsToRunToCorner[0].x += 5
+        
+
+
+
+# runApp()
